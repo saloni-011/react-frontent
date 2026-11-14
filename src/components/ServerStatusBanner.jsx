@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { WifiOff, RefreshCw, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ROOT_URL } from '../services/api';
 
 export default function ServerStatusBanner() {
   const { backendOnline, checkBackend } = useAuth();
@@ -22,8 +23,8 @@ export default function ServerStatusBanner() {
       <div className="server-status-content">
         <WifiOff size={18} className="banner-icon" />
         <span className="banner-text">
-          <strong>Backend Offline:</strong> Cannot reach the REST API at{' '}
-          <code>http://localhost:5000</code>. Ensure your backend server is running.
+          <strong>Backend Offline or Spinning Up:</strong> Cannot reach the REST API at{' '}
+          <code>{ROOT_URL}</code>. Free cloud tiers (such as Render) spin down during inactivity and take 30–60 seconds to wake up.
         </span>
       </div>
 
@@ -35,7 +36,7 @@ export default function ServerStatusBanner() {
           className="banner-retry-btn"
         >
           <RefreshCw size={14} className={isChecking ? 'animate-spin icon-mr' : 'icon-mr'} />
-          {isChecking ? 'Checking...' : 'Check Connection'}
+          {isChecking ? 'Checking...' : 'Retry Connection'}
         </button>
         <button
           type="button"
@@ -49,4 +50,3 @@ export default function ServerStatusBanner() {
     </div>
   );
 }
-

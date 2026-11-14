@@ -3,7 +3,10 @@
  * Wraps native fetch with auth headers, error handling, and backend connectivity checks.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Normalize API base URL: trim whitespace, strip trailing slashes, ensure it ends with /api
+const rawEnvUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').trim().replace(/\/+$/, '');
+export const BASE_URL = rawEnvUrl.endsWith('/api') ? rawEnvUrl : `${rawEnvUrl}/api`;
+export const ROOT_URL = BASE_URL.replace(/\/api$/, '');
 
 /**
  * Retrieve auth token from localStorage
@@ -63,11 +66,10 @@ async function request(endpoint, options = {}) {
 
     return data;
   } catch (err) {
-    // If the network call failed completely (e.g. backend server is down or CORS failed)
+    // If the network call failed completely (e.g. backend server is down, waking up, or CORS failed)
     if (err.name === 'TypeError' && err.message.toLowerCase().includes('fetch')) {
-      const serverHost = BASE_URL.replace('/api', '');
       const networkError = new Error(
-        `Cannot connect to backend server at ${serverHost}. Please ensure the WA-2 backend server is running.`
+        `Cannot connect to backend server at ${ROOT_URL}. If hosted on a free tier like Render, it may take 30–60 seconds to wake up from idle.`
       );
       networkError.isNetworkError = true;
       throw networkError;
@@ -165,12 +167,10 @@ export const tasksApi = {
 export const healthApi = {
   check: async () => {
     try {
-      const rootUrl = BASE_URL.replace('/api', '');
-      const response = await fetch(`${rootUrl}/`, { method: 'GET' });
+      const response = await fetch(`${ROOT_URL}/`, { method: 'GET' });
       return response.ok;
     } catch {
       return false;
     }
   }
 };
-
